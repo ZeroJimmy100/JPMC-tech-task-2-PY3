@@ -14,7 +14,7 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
 
@@ -32,7 +32,11 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    // before:
+    // const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+
+    // after: 
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
       stock: 'string',
@@ -48,7 +52,37 @@ class Graph extends Component<IProps, {}> {
       // Load the `table` in the `<perspective-viewer>` DOM reference.
 
       // Add more Perspective configurations here.
+
+      ///////////////////////////////////////////////////////
+      // loading the table in different aspects 
       elem.load(this.table);
+      ///////////////////////////////////////////////////////
+      // loads a graph in a continuous line, also view is known as a grid type
+      elem.setAttribute('view', 'y_line');
+      ///////////////////////////////////////////////////////
+      // column-pivots is what allow us to distinguish stock ABC with DEF, the array -
+      // - known as stock (["stock"]) is the corresponding value. In addition, the reason -
+      // - why this works because the stock here is defined in the schema object
+      elem.setAttribute('column-pivots', '["stock"]');
+      ///////////////////////////////////////////////////////
+      // row-pivots takes care of our x-axis. Thus allow us to map each datapoint based on the - 
+      // - timestamp it has. Without this, the x-axis would be blank
+      elem.setAttribute('row-pivots', '["timestamp"]');
+      ///////////////////////////////////////////////////////
+      // columns only focus on a particular part of the stock's data along the y-axis. Without this, the - 
+      // - graph will plot different datapoints of the stocks (top_ask_price, top_bid_price, stock, timestamp) 
+      // - but for this graph, we only care about top_ask_price
+      elem.setAttribute('columns', '["top_ask_price"]');
+      ///////////////////////////////////////////////////////
+      // aggregates handle the duplicate data that we observed earlier and consolidate them as just one data point. 
+      // In this case, we only want to consider a unique data point if it has unique stock name and timestamp.
+      // Otherwise, if there are duplicates like what we had before, we will average out the top_bid_prices and the - 
+      // - top_ask_prices of these 'similar' datapoints before treating them as one.
+      elem.setAttribute('aggregates', 
+      `{"stock": "distinct count",
+        "top_ask_price": "avg",
+        "top_bid_price": "avg",
+        "timestamp": "distinct count"}`);
     }
   }
 

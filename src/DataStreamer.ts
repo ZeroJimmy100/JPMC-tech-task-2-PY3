@@ -1,3 +1,5 @@
+import { request } from "http";
+
 export interface Order {
   price: Number,
   size: Number,
@@ -34,7 +36,25 @@ class DataStreamer {
     }
 
     request.send();
+
   }
+
+  // attempt to stop retrieving data 
+  // static stopData(callback: (data: ServerRespond[]) => void): void {
+  //   const stopRequest = new XMLHttpRequest;
+  //   stopRequest.open('GET', DataStreamer.API_URL, false);
+
+  //   stopRequest.onload = () => {
+  //     if(stopRequest.status === 200) {
+  //       callback(JSON.parse(stopRequest.responseText));
+  //     }else {
+  //       alert('Request Failed');
+  //     }
+  //   }
+    
+  //   stopRequest.abort();
+
+  // }
 }
 
 export default DataStreamer;
